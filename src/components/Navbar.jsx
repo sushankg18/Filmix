@@ -3,17 +3,17 @@ import React from 'react'
 
 const Navbar = () => {
   return (
-    <Box w={'100%'} display={'flex'} justifyContent={'space-between'} h={'fit-content'} p={'1rem 2rem'} bgColor={'whitesmoke'}>
+    <Box w={'100%'} display={'flex'} borderBottom={'.1rem solid #121212'} justifyContent={'space-between'} h={'fit-content'} p={'1rem 2rem'} >
       <Box>
-        <Text>
-          Logo
+        <Text fontWeight={'bold'} cursor={'pointer'} fontSize={'x-large'}>
+          FILMIX
         </Text>
       </Box>
 
       <Box display={'flex'} gap={'2rem'}>
-        <Text>HOME</Text>
-        <Text>BOLLYWOOD</Text>
-        <Text>HOME</Text>
+        <Text>Bollywood</Text>
+        <Text>WebSeries</Text>
+        <Text>Anime</Text>
       </Box>
     </Box>
   )
