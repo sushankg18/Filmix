@@ -10,16 +10,16 @@ const Navbar = () => {
     color: "#fc4444"
   };
   return (
-    <Box w={'100%'} display={'flex'} borderBottom={'.1rem solid #121212'} justifyContent={'space-between'} h={'fit-content'} p={'1rem 2rem'} >
+    <Box w={'100%'} display={'flex'} borderBottom={'.1rem solid #121212'} alignItems={'center'} justifyContent={'space-between'} h={'fit-content'} p={'1rem 2rem'} >
       <Box>
         <Link to={'/'} style={styles} >
-          <Text fontWeight={'bold'} textDecoration={'none'} cursor={'pointer'} fontSize={'x-large'}>
+          <Text fontWeight={'bold'} textDecoration={'none'} cursor={'pointer'} fontSize={'xx-large'}>
             FILMIX
           </Text>
         </Link>
       </Box>
-      <Box>
-        <Input placeholder='Enter any movie' backgroundColor={'#C7C7C7'} padding={'.3rem 1rem'} color={'black'} fontWeight={'bold'} outline={'none'} />
+      <Box w={'30%'}>
+        <Input placeholder='Enter any movie or tv series' backgroundColor={'#fff'} width={'100%'} border={'none'} padding={'.3rem 1rem'} color={'black'} fontWeight={'bold'} outline={'none'} />
       </Box>
       <Box display={'flex'} gap={'2rem'}>
         <Text cursor={'pointer'}>Bollywood</Text>
