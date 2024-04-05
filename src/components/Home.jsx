@@ -23,8 +23,8 @@ const Home = () => {
                 <Box display={'flex'} flexWrap={'wrap'} gap={'1rem'} justifyContent={'space-around'} alignItems={'flex-start'}>
                     {
                         movies.map((item, idx) => (
-                            <Link to={`/movie/${item.original_title}`} target='_blank'>
-                                <Box key={idx} cursor={'pointer'} position={'relative'} boxShadow={' inset 0px -55px 25px 0px #121212'} width={'11rem'} height={'16rem'} bgPosition={'center'} bgSize={'contain'} bgRepeat={'no-repeat'} bgImage={`https://image.tmdb.org/t/p/w500${item.poster_path}`} gap={'1rem'} display={'flex'} flexDir={'column'}>
+                            <Link to={`/movie/${item.id}`} target='_blank'>
+                                <Box key={idx} _hover={{border : "3px solid orange"}} cursor={'pointer'} position={'relative'} boxShadow={' inset 0px -55px 25px 0px #121212'} width={'10.5rem'} height={'16rem'} bgPosition={'center'} bgSize={'contain'} bgRepeat={'no-repeat'} bgImage={`https://image.tmdb.org/t/p/w500${item.poster_path}`} gap={'1rem'} display={'flex'} flexDir={'column'}>
                                     <Text noOfLines={'2'} position={'absolute'} color={'white'} textAlign={'center'} bottom={'3'} fontWeight={'bold'} padding={'0 .4rem'}>{item.title}</Text>
                                 </Box>
                             </Link>
