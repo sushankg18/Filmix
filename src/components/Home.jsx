@@ -8,8 +8,12 @@ const Home = () => {
     const ApiKey = 'a8d7d1e8391d7a5863bd8bdd945d63b4'
     useEffect(() => {
         const fetchData = async () => {
-            const response = await axios.get(`${BaseUrl}/trending/movie/week?api_key=${ApiKey}`);
-            setMovies(response.data.results)
+            try {
+                const response = await axios.get(`${BaseUrl}/trending/movie/week?api_key=${ApiKey}&region=IN`);
+                setMovies(response.data.results)
+            } catch (error) {
+                console.log("Got an Error",error)
+            }
         }
         fetchData()
     }, [])

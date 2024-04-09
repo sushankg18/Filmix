@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Home from './components/Home'
 import MoviesDetails from './screens/MoviesDetails';
 import Footer from './components/Footer';
+import WebseriesDetails from './screens/WebseriesDetails';
 function App() {
   return (
     <Router>
@@ -11,6 +12,7 @@ function App() {
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path='/movie/:id' element={<MoviesDetails />} />
+        <Route path='/tv/:id' element={<WebseriesDetails />}/>
       </Routes>
       <Footer />
     </Router>
