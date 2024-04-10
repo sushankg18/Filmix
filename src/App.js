@@ -5,6 +5,7 @@ import Home from './components/Home'
 import MoviesDetails from './screens/MoviesDetails';
 import Footer from './components/Footer';
 import WebseriesDetails from './screens/WebseriesDetails';
+import PersonDetails from './screens/PersonDetails';
 function App() {
   return (
     <Router>
@@ -13,6 +14,7 @@ function App() {
         <Route path='/' element={<Home />} />
         <Route path='/movie/:id' element={<MoviesDetails />} />
         <Route path='/tv/:id' element={<WebseriesDetails />}/>
+        <Route path='/person/:id' element={<PersonDetails />}/>
       </Routes>
       <Footer />
     </Router>

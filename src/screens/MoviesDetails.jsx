@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Box, Button, Flex, Heading, Image,Stack, Text, } from '@chakra-ui/react'
+import { Box, Button, Flex, Heading, Image, Stack, Text, } from '@chakra-ui/react'
 import { useParams } from 'react-router-dom'
 import { FaPlay } from "react-icons/fa";
 import { IoMdDownload } from "react-icons/io";
@@ -11,9 +11,11 @@ const MoviesDetails = () => {
   const { id } = useParams();
   const [movieDetail, setMovieDetail] = useState([])
   const [movieDirector, SetmovieDirector] = useState([])
+  const [reviews, setReviews] = useState([])
   const [trailer, setTrailer] = useState()
   const [cast, setCast] = useState([])
   const [watchNowCLicked, setWatchNowCLicked] = useState(false)
+  const [readmore, setReadmore] = useState(false)
   const [loading, setLoading] = useState(true)
   const BaseUrl = 'https://api.themoviedb.org/3'
   const ApiKey = 'a8d7d1e8391d7a5863bd8bdd945d63b4'
@@ -34,11 +36,13 @@ const MoviesDetails = () => {
         const response = await axios.get(`${BaseUrl}/movie/${id}?api_key=${ApiKey}`);
         const castNcrew = await axios.get(`${BaseUrl}/movie/${id}/credits?api_key=${ApiKey}`)
         const trailerData = await axios.get(`${BaseUrl}/movie/${id}/videos?api_key=${ApiKey}`)
+        const reviews = await axios.get(`${BaseUrl}/movie/${id}/reviews?api_key=${ApiKey}`)
         const trailers = trailerData.data.results.filter(video => video.type === 'Trailer');
         if (trailers.length > 0) {
           setTrailer(trailers[0])
         }
-        console.log(castNcrew.data)
+        console.log(reviews.data.results)
+        setReviews(reviews.data.results)
         const formattedGameData = {
           ...response.data,
           releasedFormatted: formatDate(response.data.release_date),
@@ -63,6 +67,9 @@ const MoviesDetails = () => {
   const handleMovie = () => {
     setWatchNowCLicked(!watchNowCLicked);
   }
+  const handleReadmore = () => {
+    setReadmore(!readmore)
+  }
 
   return (
     <Box w={'100%'} minH={'90vh'} bgColor={'black'} color={'#fff'} padding={'2rem 3rem'}>
@@ -75,24 +82,24 @@ const MoviesDetails = () => {
                 <Heading color={'orange'} textTransform={'uppercase'} >{item.title}</Heading>
                 <Text>{item.releasedFormatted}</Text>
                 <Flex gap={'1rem'}>
-                  <Text>Genre:</Text>
+                  <Text>Genre:
+                  </Text>
                   {
                     item.genres.map((genre, index) => (
-                      <Text>{genre.name}</Text>
+                      <Text color={'gray'} border={'1px solid #717171'} padding={'.1rem .7rem'} borderRadius={'.5rem'} cursor={'pointer'}>{genre.name}</Text>
                     ))
                   }
                 </Flex>
-                <Text>Duration : {item.duration}</Text>
+                <Text>Duration : <span style={{ color: "gray" }}> {item.duration}</span></Text>
                 {
                   movieDirector && (
                     <Stack gap={'0'}>
-                      <Text >Director :</Text>
-                      <Text opacity={'.5'}>{movieDirector.name}</Text>
+                      <Text >Director : <span style={{ color: "gray" }}> {movieDirector.name}</span></Text>
                     </Stack>
                   )
                 }
-                <Button border={'none'} fontWeight={'bold'} onClick={handleMovie} color={'white'} padding={'.5rem 1rem'} borderRadius={'.8rem'} backgroundColor={'red'} cursor={'pointer'} leftIcon={<FaPlay />}>Watch Full movie</Button>
-                <Button border={'none'} fontWeight={'bold'} color={'black'} padding={'.5rem 1rem'} borderRadius={'.8rem'} backgroundColor={'#fff'} cursor={'pointer'} leftIcon={<IoMdDownload />}>Download</Button>
+                <Button border={'none'} w={'11rem'} fontWeight={'bold'} onClick={handleMovie} color={'white'} padding={'.5rem 1rem'} borderRadius={'.8rem'} backgroundColor={'red'} cursor={'pointer'} leftIcon={<FaPlay />}>Watch Full movie</Button>
+                <Button border={'none'} w={'11rem'} fontWeight={'bold'} color={'black'} padding={'.5rem 1rem'} borderRadius={'.8rem'} backgroundColor={'#fff'} cursor={'pointer'} leftIcon={<IoMdDownload />}>Download</Button>
               </Stack>
             </Box>
             {trailer && (
@@ -119,16 +126,39 @@ const MoviesDetails = () => {
                 )
                 )
               }
-              <Button w={'fit-content'} cursor={'pointer'} _hover={{textDecor : "underline"}} fontSize={'1.1rem'} bgColor={'transparent'} border={'none'} color={'white'} padding={'0 2rem'} rightIcon={<FaArrowRight />}>Show All </Button>
+              <Button w={'fit-content'} cursor={'pointer'} _hover={{ textDecor: "underline" }} fontSize={'1.1rem'} bgColor={'transparent'} border={'none'} color={'white'} padding={'0 2rem'} rightIcon={<FaArrowRight />}>Show All </Button>
             </Flex>
           </Box>
-          <Box h={'100vh'} background={'rgba(0,0,0,0.8)'}  zIndex={'99'} w={'100vw'} display={watchNowCLicked ? "flex" : 'none'} justifyContent={'center'} alignItems={'center'} position={'fixed'} left={'0'} top={'0'}>
+          <Box h={'100vh'} background={'rgba(0,0,0,0.8)'} zIndex={'99'} w={'100vw'} display={watchNowCLicked ? "flex" : 'none'} justifyContent={'center'} alignItems={'center'} position={'fixed'} left={'0'} top={'0'}>
             <Box width={'80%'} height={'80%'} display={'flex'} >
               <iframe style={{ border: "none" }} src={`https://vidsrc.xyz/embed/movie/${id}`} width={'100%'} height={'100%'}></iframe>
               <IoCloseSharp fontSize={'2rem'} cursor={'pointer'} onClick={handleMovie} />
             </Box>
           </Box>
 
+
+          {
+            reviews.length > 0 && (
+              <Box minH={'50vh'}>
+                <Heading color={'gray'} mb={'2rem'}>Reviews</Heading>
+                <Stack gap={'2rem'}>
+                  {
+                    reviews.map((review, index) => (
+                      <Stack key={index} gap={'.5rem'} bgColor={"#333333"} padding={'.4rem 1rem'} w={'60%'}>
+                        <Flex cursor={'pointer'} w={'fit-content'} gap={'.5rem'} alignItems={'center'}>
+                          <Button padding={'1rem'} fontWeight={'bold'} bgColor={'purple'} border={'none'} color={'white'} w={'2rem'} height={'2rem'} borderRadius={'50%'}>{review.author.slice(0, 1)}</Button>
+                          <Text >@{review.author}</Text>
+                        </Flex>
+                        <Text style={{ whiteSpace: 'pre-line' }} noOfLines={readmore ? "auto" : '5'}>{review.content}
+                        </Text>
+                        <Button fontSize={'.9rem'} width={'fit-content'} onClick={handleReadmore} border={'none'} bgColor={'transparent'} color={'orange'} borderBottom={'1px solid orange'} cursor={'pointer'}>{readmore ?"read less" :"read more "}</Button>
+                      </Stack>
+                    ))
+                  }
+                </Stack>
+              </Box>
+            )
+          }
         </>
       ))}
 

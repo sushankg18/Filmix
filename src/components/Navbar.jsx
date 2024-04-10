@@ -41,7 +41,7 @@ const Navbar = () => {
             <Box height={'40vh'} mt={'1rem'} bgColor={'black'} position={'absolute'} w={'100%'} zIndex={'99'}>
               {
                 searchResults.map((item, index) => (
-                  <Link to={`/${item.media_type}/${item.id}`} style={{ textDecoration: "none" }} onClick={() => { setSearchTerm('') }}>
+                  <Link to={`/${item.media_type}/${item.id}`} target='_blank' style={{ textDecoration: "none" }} onClick={() => { setSearchTerm('') }}>
                     <Flex borderBottom={'1px solid #131313'} p={'.2rem 1rem'} mb={'1rem'} height={'2.7rem'} gap={'1rem'}>
                       <Image w={'2rem'} bgColor={'white'} src={item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : item.profile_path ? `https://image.tmdb.org/t/p/w500${item.profile_path}` : NoImageAvailable} />
                       <Stack gap={'0rem'}>
