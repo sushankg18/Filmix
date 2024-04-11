@@ -11,7 +11,6 @@ const Navbar = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(`https://api.themoviedb.org/3/search/multi?api_key=a8d7d1e8391d7a5863bd8bdd945d63b4&query=${searchTerm}`);
-        console.log(response.data.results);
         setSearchResults(response.data.results.slice(0, 5));
       } catch (error) {
         console.log('Got an Error', error);
@@ -38,7 +37,7 @@ const Navbar = () => {
         {
           searchResults.length > 0 && (
 
-            <Box height={'40vh'} mt={'1rem'} bgColor={'black'} position={'absolute'} w={'100%'} zIndex={'99'}>
+            <Box minH={'fit-content'} mt={'1rem'} bgColor={'black'} position={'absolute'} w={'100%'} zIndex={'99'}>
               {
                 searchResults.map((item, index) => (
                   <Link to={`/${item.media_type}/${item.id}`} target='_blank' style={{ textDecoration: "none" }} onClick={() => { setSearchTerm('') }}>

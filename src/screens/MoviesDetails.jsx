@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Box, Button, Flex, Heading, Image, Stack, Text, } from '@chakra-ui/react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { FaPlay } from "react-icons/fa";
 import { IoMdDownload } from "react-icons/io";
 import { IoCloseSharp } from "react-icons/io5";
@@ -41,7 +41,6 @@ const MoviesDetails = () => {
         if (trailers.length > 0) {
           setTrailer(trailers[0])
         }
-        console.log(reviews.data.results)
         setReviews(reviews.data.results)
         const formattedGameData = {
           ...response.data,
@@ -56,7 +55,7 @@ const MoviesDetails = () => {
         if (director.length > 0) {
           SetmovieDirector(director[0])
         }
-        document.title = response.data.original_title
+        document.title = response.data.title
       } catch (error) {
         console.log(error)
       }
@@ -116,13 +115,13 @@ const MoviesDetails = () => {
             <Flex gap={'1rem'} py={'1rem'}>
               {
                 cast.map((cast, index) => (
-                  <>
-                    <Box p={'.3rem 1rem'} borderRadius={'.6rem'} cursor={'pointer'} bgColor={'#121212'} w={'10rem'}>
+                  <Box p={'.3rem 1rem'} borderRadius={'.6rem'} cursor={'pointer'} bgColor={'#121212'} w={'10rem'}>
+                    <Link to={`/person/${cast.id}`} style={{ textDecoration: "none" }}>
                       <Image width={'7rem'} mb={'1rem'} src={`https://image.tmdb.org/t/p/w500${cast.profile_path}`} />
-                      <Text textAlign={'center'} mb={'.5rem'} fontWeight={'bold'}>{cast.name}</Text>
-                      <Text textAlign={'center'} fontSize={'.8rem'} fontWeight={'200'}>{cast.character}</Text>
-                    </Box>
-                  </>
+                      <Text textAlign={'center'} color={'white'} mb={'.5rem'} fontWeight={'bold'}>{cast.name}</Text>
+                      <Text textAlign={'center'} color={'dimgray'} fontSize={'.8rem'} fontWeight={'200'}>{cast.character}</Text>
+                    </Link>
+                  </Box>
                 )
                 )
               }
@@ -151,7 +150,7 @@ const MoviesDetails = () => {
                         </Flex>
                         <Text style={{ whiteSpace: 'pre-line' }} noOfLines={readmore ? "auto" : '5'}>{review.content}
                         </Text>
-                        <Button fontSize={'.9rem'} width={'fit-content'} onClick={handleReadmore} border={'none'} bgColor={'transparent'} color={'orange'} borderBottom={'1px solid orange'} cursor={'pointer'}>{readmore ?"read less" :"read more "}</Button>
+                        <Button fontSize={'.9rem'} width={'fit-content'} onClick={handleReadmore} border={'none'} bgColor={'transparent'} color={'orange'} borderBottom={'1px solid orange'} cursor={'pointer'}>{readmore ? "read less" : "read more "}</Button>
                       </Stack>
                     ))
                   }

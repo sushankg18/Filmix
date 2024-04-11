@@ -39,7 +39,6 @@ const WebseriesDetails = () => {
         if (trailers.length > 0) {
           setTrailer(trailers[0])
         }
-        console.log(response.data)
         const formattedGameData = {
           ...response.data,
           releasedFormatted: formatDate(response.data.first_air_date),
@@ -53,7 +52,7 @@ const WebseriesDetails = () => {
         if (director.length > 0) {
           SetmovieDirector(director[0])
         }
-        document.title = response.data.original_name
+        document.title = response.data.name
       } catch (error) {
         console.log(error)
       }
@@ -83,7 +82,7 @@ const WebseriesDetails = () => {
                     ))
                   }
                 </Flex>
-                <Text>Duration : {item.duration}</Text>
+                {/* <Text>Duration : {item.duration}</Text> */}
                 {
                   movieDirector && (
                     <Stack gap={'0'}>
