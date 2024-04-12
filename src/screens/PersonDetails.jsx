@@ -2,6 +2,7 @@ import React, { useState, useEffect, useSyncExternalStore } from 'react'
 import { Box, Button, Flex, Heading, Image, Stack, Text, } from '@chakra-ui/react'
 import { useParams } from 'react-router-dom'
 import { FaArrowRight } from "react-icons/fa";
+import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import axios from 'axios'
 import Loader from '../components/Loader'
 const PersonDetails = () => {
@@ -28,7 +29,7 @@ const PersonDetails = () => {
             try {
                 const response = await axios.get(`${BaseUrl}/person/${id}?api_key=${ApiKey}`);
                 const personMovies = await axios.get(`${BaseUrl}/person/${id}/movie_credits?api_key=${ApiKey}`)
-                console.log(personMovies.data)
+                // console.log(response.data.biography.length)
                 const formattedGameData = {
                     ...response.data,
                     birthDate: formatDate(response.data.birthday),
@@ -52,17 +53,35 @@ const PersonDetails = () => {
         <Box w={'100%'} minH={'90vh'} bgColor={'black'} color={'#fff'} padding={'2rem 3rem'}>
             {loading ? <Loader /> : personDetails.map((item, idx) => (
                 <>
-                    <Box bgColor={'#171717'} w={'100%'} mb={'2rem'} minH={'fit-content'} display={'flex'} justifyContent={'space-between'} >
+                    <Box w={'100%'} mb={'2rem'} minH={'fit-content'} display={'flex'} justifyContent={'space-between'} >
                         <Box display={'flex'} gap={'2rem'}>
-                            <Image border={'1px solid #131313'} w={'16rem'} height={'25rem'} src={`https://image.tmdb.org/t/p/w500${item.profile_path}`} />
+                            <Image border={'1px solid #131313'} w={'16rem'} borderRadius={'.7rem'} height={'20rem'} src={`https://image.tmdb.org/t/p/w500${item.profile_path}`} />
                             <Stack gap={'1rem'}>
                                 <Heading color={'orange'} textTransform={'uppercase'} >{item.name}</Heading>
                                 <Text>Birthday : <span style={{ color: "gray" }}> {item.birthDate}</span></Text>
                                 <Text>Place of Birth : <span style={{ color: "gray" }}> {item.place_of_birth}</span></Text>
                                 <Stack>
-                                    <Text noOfLines={readMore ? "auto" :'12'} style={{ whiteSpace: 'pre-line' }}>Biography : <span style={{ color: "gray", marginLeft: ".6rem" }}>{item.biography}</span></Text>
-                                    <Button color={'black'} onClick={handleReadmore} width={'fit-content'} padding={'.1rem .5rem'}>{readMore ? "Read less" : "Read more"}</Button>
+                                    <Text noOfLines={readMore ? "auto" : '7'} style={{ whiteSpace: 'pre-line' }}>
+                                        Biography : <span style={{ color: "gray", marginLeft: ".6rem" }}>{item.biography}</span>
+                                    </Text>
+                                    <Button
+                                        display={item.biography.split('\n').length > 5 || item.biography.split(' ').length > 130 ? "flex" : "none"}
+                                        color={'white'}
+                                        bg={'none'}
+                                        // textDecor={'underline 1px solid white'}
+                                        border={'none'}
+                                        borderBottom={'1px solid #676767'}
+                                        onClick={handleReadmore}
+                                        width={'fit-content'}
+                                        padding={'.1rem .5rem'}
+                                        alignItems={'center'}
+                                        gap={'.5rem'}
+                                    >
+                                        {readMore ? "Read less" : "Read more"}
+                                        {readMore ? <IoIosArrowUp/> : <IoIosArrowDown /> }
+                                    </Button>
                                 </Stack>
+
 
                             </Stack>
                         </Box>
@@ -70,7 +89,7 @@ const PersonDetails = () => {
                     </Box>
 
                     <Box overflowX={'scroll'} my={'2rem'} sx={scrollbarStylesHorizontal}>
-                      
+
                         <Flex gap={'1rem'} py={'1rem'}>
                             {
                                 personMovies.map((cast, index) => (
