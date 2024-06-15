@@ -129,8 +129,8 @@ const MoviesDetails = () => {
             </Flex>
           </Box>
           <Box h={'100vh'} background={'rgba(0,0,0,0.8)'} zIndex={'99'} w={'100vw'} display={watchNowCLicked ? "flex" : 'none'} justifyContent={'center'} alignItems={'center'} position={'fixed'} left={'0'} top={'0'}>
-            <Box width={'80%'} height={'80%'} display={'flex'} >
-              <iframe style={{ border: "none" }} src={`https://vidsrc.xyz/embed/movie/${id}`} width={'100%'} height={'100%'}></iframe>
+            <Box width={'85%'} height={'90%'} display={'flex'} >
+              <iframe allowFullScreen style={{ border: "none" }} src={`https://vidsrc.xyz/embed/movie/${id}`} width={'100%'} height={'100%'}></iframe>
               <IoCloseSharp fontSize={'2rem'} cursor={'pointer'} onClick={handleMovie} />
             </Box>
           </Box>
