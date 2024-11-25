@@ -34,7 +34,6 @@ const Login = () => {
             );
 
             if (user) {
-                console.log("FRONTEND: Complete user data fetched:", user);
                 dispatch(setAuthUser(user.data.logInUser));
 
                 toast.success('User logged in successfully!', {
@@ -54,7 +53,6 @@ const Login = () => {
                 }, 2000);
             }
         } catch (error) {
-            console.log("FRONTEND: Error while logging the user:", error);
             toast('Invalid email or password!');
         }
     };

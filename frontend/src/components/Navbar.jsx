@@ -5,10 +5,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import NoImageAvailable from '../Assets/noimageavailable.png';
 import { MdOutlineLogout, MdOutlineSearch } from "react-icons/md";
+import { CiBookmark, CiSettings } from "react-icons/ci";
 import { useDispatch, useSelector } from 'react-redux';
 import { setAuthUser } from '../redux/userSlice';
 import { setGenreName } from '../redux/movieSlice';
-import { IoClose } from 'react-icons/io5';
+import { IoClose, IoSettingsOutline } from 'react-icons/io5';
 import { toast } from 'react-toastify';
 
 const Navbar = () => {
@@ -54,19 +55,25 @@ const Navbar = () => {
     fetchGenres();
   }, []);
 
-  const handleLogout = () => {
-    dispatch(setAuthUser(null))
-    toast.success('User logged out', {
-      position: "bottom-center",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "light",
+  const handleLogout = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/api/v1/user/logout",{withCredentials: true})
+      console.log("USER LOGOUT SUCCESSFULLY", response)
+      dispatch(setAuthUser(null))
+      toast.success('User logged out', {
+        position: "bottom-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      }
+      );
+    } catch (error) {
+      console.log("Got error while logout : ", error)
     }
-    );
     // navigate('/')
   };
 
@@ -136,22 +143,35 @@ const Navbar = () => {
                 </Box>
               </MenuButton>
 
-              <MenuList zIndex={'99'} display={'flex'} fontWeight={'900'} flexDir={'column'} gap={'.4rem'}>
+              <MenuList zIndex={'99'} display={'flex'} p={'.8rem 2rem'} bgColor={'#1D1B11'} fontWeight={'900'} flexDir={'column'} gap={'.4rem'}>
 
-                <Link to={`/user/${authUser?.fullname}`}>
-                  <MenuItem fontSize={'1rem'} cursor={'pointer'} border={'none'} gap={'.5rem'} fontWeight={'700'} color={'black'} bgColor={'white'} p={'.3rem 1rem'} w={'100%'}>
-                    <Circle bgColor={'brown'} color={'white'} w={'2rem'} h={'2rem'}>
-                      {authUser.fullname.charAt(0).toUpperCase()}
-                    </Circle>
-                    {authUser.fullname.charAt(0).toUpperCase() + authUser.fullname.slice(1)}
-                  </MenuItem>
-                </Link>
+                <MenuItem display={'flex'} bg={'transparent'} flexDir={'column'} fontSize={'1rem'} border={'none'} gap={'.5rem'} fontWeight={'700'} color={'white'} p={'.3rem 1rem'} w={'100%'}>
+                  <Circle bgColor={'brown'} color={'white'} w={'4rem'} h={'4rem'}>
+                    {authUser.fullname.charAt(0).toUpperCase()}
+                  </Circle>
 
-                <MenuItem h={'2rem'} cursor={'pointer'} fontSize={'1rem'} border={'none'} bgColor={'red'} fontWeight={'700'} gap={'1rem'} onClick={handleLogout} p={'.3rem 1rem'} w={'100%'}>
-                  Logout
-                  <MdOutlineLogout />
+                  {authUser.fullname.charAt(0).toUpperCase() + authUser.fullname.slice(1)}
                 </MenuItem>
 
+                <Flex flexDir={'column'} gap={'1rem'}>
+                  <Text fontSize={'.8rem'}>Manage</Text>
+                  <Link to={`/user/${authUser?.fullname}`} style={{ textDecoration: "none" }}>
+                    <MenuItem h={'2rem'} _hover={{ bgColor: "white", color: "black" }} cursor={'pointer'} fontSize={'1rem'} border={'none'} bg={'transparent'} color={'white'} fontWeight={'700'} gap={'1rem'} p={'.3rem 1rem'} w={'100%'}>
+                      <CiBookmark />
+                      My wishlist
+                    </MenuItem>
+                  </Link>
+                  <MenuItem h={'2rem'} _hover={{ bgColor: "white", color: "black" }} cursor={'pointer'} fontSize={'1rem'} border={'none'} bg={'transparent'} color={'white'} fontWeight={'700'} gap={'1rem'} p={'.3rem 1rem'} w={'100%'}>
+                    <IoSettingsOutline />
+                    Account settings
+                  </MenuItem>
+                  <MenuItem h={'2rem'} _hover={{ bgColor: "white", color: "black" }} cursor={'pointer'} fontSize={'1rem'} border={'none'} bg={'transparent'} color={'white'} fontWeight={'700'} gap={'1rem'} onClick={handleLogout} p={'.3rem 1rem'} w={'100%'}>
+                    <MdOutlineLogout />
+                    Sign Out
+                  </MenuItem>
+
+
+                </Flex>
               </MenuList>
 
             </Menu>
@@ -163,17 +183,18 @@ const Navbar = () => {
           )}
         </Box>
 
-      </Box>
+      </Box >
       {
         showSearchBar ?
           <Flex w={'100%'} justifyContent={'center'} position={'relative'}>
-            <Input _placeholder={{ color: "black" }} fontSize={'1.2rem'} placeholder='Search for any movie or TV series' onChange={(e) => setSearchTerm(e.target.value)} backgroundColor={'white'} width={'100%'} padding={'.3rem 1rem'} color={'black'} fontWeight={'bold'} outline={'none'} />
+            < Input _placeholder={{ color: "black" }
+            } fontSize={'1.2rem'} placeholder='Search for any movie or TV series' onChange={(e) => setSearchTerm(e.target.value)} backgroundColor={'white'} width={'100%'} padding={'.3rem 1rem'} color={'black'} fontWeight={'bold'} outline={'none'} />
             {
               searchResults.length > 0 && (
                 <Box minH={'fit-content'} mt={'1rem'} bgColor={'black'} top={'2rem'} position={'absolute'} w={'100%'} zIndex={'99'}>
                   <SimpleGrid columns={2} spacing={'1rem'}>
                     {searchResults.map((item, index) => (
-                      <Link key={index} to={item.media_type === "tv" ? `/series/${item.id}` : item.media_type === "movie" ? `/movie/${item.id}` : `/person/${item.id}`} target='_blank' style={{ textDecoration: "none" }} onClick={() => { setSearchTerm(''); setShowSearchBar(false) }}>
+                      <Link key={index} to={item.media_type === "tv" ? `/series/${item.id}` : item.media_type === "movie" ? `/movie/${item.id}` : `/person/${item.id}`} style={{ textDecoration: "none" }} onClick={() => { setSearchTerm(''); setShowSearchBar(false) }}>
                         <Flex borderBottom={'1px solid #131313'} p={'.2rem 1rem'} mb={'1rem'} height={'5rem'} gap={'1rem'}>
                           <Image w={'3.5rem'} h={'5rem'} bgColor={'white'} src={item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : item.profile_path ? `https://image.tmdb.org/t/p/w500${item.profile_path}` : NoImageAvailable} />
                           <Stack gap={'0rem'} justifyContent={'center'}>
@@ -187,7 +208,7 @@ const Navbar = () => {
                 </Box>
               )
             }
-          </Flex>
+          </Flex >
           :
           <Box color={'#fff'} fontSize={'.9rem'} mt={'.5rem'} userSelect={'none'} cursor={'default'}>
             <marquee> NOTE : Please use *Brave Browser or any Ad free browser while streaming movies on this website to block intrusive ads, as we have no control over the ads displayed. Your understanding is appreciated! </marquee>

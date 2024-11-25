@@ -50,7 +50,7 @@ const Home = () => {
                             movies.map((item, idx) => (
                                 <Box w={'fit-content'}>
 
-                                    <Link to={`/movie/${item.id}`} style={{ textDecoration: "none", width: "fit-content" }} target='_blank' key={idx}>
+                                    <Link to={`/movie/${item.id}`} style={{ textDecoration: "none", width: "fit-content" }}  key={idx}>
                                         <Box _hover={{ border: "3px solid orange" }} cursor={'pointer'} position={'relative'} boxShadow={' inset 0px -55px 25px 0px #121212'} width={'10.5rem'} height={'16rem'} bgPosition={'center'} bgSize={'contain'} bgRepeat={'no-repeat'} bgImage={`https://image.tmdb.org/t/p/w500${item.poster_path}`} gap={'1rem'} display={'flex'} flexDir={'column'}>
                                             <Text noOfLines={'2'} position={'absolute'} color={'white'} textAlign={'center'} bottom={'3'} fontWeight={'bold'} padding={'0 .4rem'}>{item.title}</Text>
                                         </Box>

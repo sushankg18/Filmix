@@ -136,33 +136,47 @@ export const updateUser = async (req, res) => {
     }
 }
 
-export const addToWishlist = async (req, res) => {
-    const loggedInuser = req.id;
-    const { videoId } = req.params;
-
+export const AddandRemoveFromWishlist = async (req, res) => {
     try {
 
-        const user = await User.findById(loggedInuser).select("-password");
-        if (!user) {
-            return res.status(402).json({ message: "User doesn't exist" })
-        }else{
-            console.log("USER IS : ",user)
-        }
-        
-        // const videoUrl = `https://api.themoviedb.org/3/movie/${videoId}`
+        const userId = req.id;
 
+        const { videoId } = req.params;
+
+        //checks if user logged In or not
+        if (!userId) {
+            return res.status(402).json({ message: "Please login to remove anything from wishlist.!" })
+        }
+
+        //checks if videoId exists or not
+        if (!videoId) return res.status(402).json({ message: "Invalid video id " })
+
+
+        const user = await User.findById(userId).select("wishlist")
+        //checks if user exist or not
+        if (!user) return res.status(400).json({ message: "No user found..!" })
+
+
+        //checking if the videoId stored in database or not
         if (user.wishlist.includes(videoId)) {
-            return res.status("201").json({ message: "Video is already in favorite" })
+            user.wishlist = user.wishlist.filter(data => data.toString() !== videoId.toString());
+            await user.save()
+
+            const updatedUser = await User.findById(userId).select("-password")
+            return res.status(200).json({ message: "Video removed from wishlist", updatedUser })
+
+        } else {
+            user.wishlist.push(videoId)
+            await user.save()
+            const updatedUser = await User.findById(userId).select("-password")
+            return res.status(201).json({ message: "video added to wishlist.!", updatedUser })
         }
-        await user.wishlist.push(videoId)
 
-        await user.save()
-
-        return res.status("200").json({ message: "Video is successfully added to your favorite",user})
     } catch (error) {
-        console.log("error while adding video to wishlist : ",error)
-        return res.status("400").json({message : "Error while adding video to favorite", error});
+        console.log("Error while removing from wishlist", error)
+        return res.status(400).json({ message: "got error while removing video from wishlist " })
     }
+
 }
 
 export const deleteUser = async (req, res) => {

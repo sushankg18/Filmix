@@ -27,9 +27,7 @@ const Signup = () => {
                 }, withCredentials: true
             }
             )
-            if (user) {
-                console.log("Frontend : User registered successfully")
-            }
+           
             if(user.status === 200){
                 navigate("/login")
             }

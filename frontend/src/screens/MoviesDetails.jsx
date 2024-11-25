@@ -2,38 +2,47 @@ import React, { useState, useEffect } from 'react'
 import { Box, Button, Center, Flex, Heading, Image, Stack, Text, } from '@chakra-ui/react'
 import { Link, useParams } from 'react-router-dom'
 import { FaPlay } from "react-icons/fa";
-import { IoMdDownload } from "react-icons/io";
+import { IoMdDownload, IoMdPlay } from "react-icons/io";
+import { FaBookmark } from "react-icons/fa";
 import { IoCloseSharp } from "react-icons/io5";
 import { FaArrowRight } from "react-icons/fa";
 import defaultImg from '../Assets/noimageavailable.png'
 import axios from 'axios'
 import Loader from '../components/Loader'
 import { CiHeart } from 'react-icons/ci';
-import { MdFavoriteBorder } from 'react-icons/md';
-import { useDispatch } from 'react-redux';
+import { MdFavoriteBorder, MdFavorite } from 'react-icons/md';
+import { useDispatch, useSelector } from 'react-redux';
 import { setGenreName } from '../redux/movieSlice';
+import { setAuthUser } from '../redux/userSlice';
+import { toast, ToastContainer } from 'react-toastify';
+import { MdDeleteOutline } from "react-icons/md";
+
 
 const MoviesDetails = () => {
 
 
   const { id } = useParams();
   const dispatch = useDispatch()
+  const { authUser } = useSelector((store) => store.user)
+
 
   const [movieDetail, setMovieDetail] = useState([])
   const [movieDirector, SetmovieDirector] = useState([])
   const [reviews, setReviews] = useState([])
   const [trailer, setTrailer] = useState()
   const [cast, setCast] = useState([])
-  const [favourite, setFavourite] = useState(false)
-  const [watchLater, setWatchLater] = useState(false)
   const [recommendations, setRecommendations] = useState([])
   const [watchNowCLicked, setWatchNowCLicked] = useState(false)
   const [readmore, setReadmore] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [Favorites, setFavorites] = useState(false)
+  const [alreadyInFav, setAlreadyInFav] = useState(false)
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
+
   const BaseUrl = 'https://api.themoviedb.org/3'
   const ApiKey = 'a8d7d1e8391d7a5863bd8bdd945d63b4'
 
-  
+
   const formatDate = (rawDate) => {
     const options = { month: "short", day: "numeric", year: "numeric" };
     return new Date(rawDate).toLocaleDateString("en-US", options);
@@ -71,35 +80,84 @@ const MoviesDetails = () => {
         if (director.length > 0) {
           SetmovieDirector(director[0])
         }
+        if (authUser?.wishlist?.toString().includes(id)) {
+          setAlreadyInFav(true)
+        }
         document.title = response.data.title
       } catch (error) {
         console.log(error)
       }
     }
     fetchData()
-  }, [id]);
+  }, [id , authUser?.wishlist]);
 
   const handleMovie = () => {
-    setWatchNowCLicked(!watchNowCLicked);
+    if (!authUser) {
+      setIsUserLoggedIn(false);
+
+      // console.log("IS USER LOGGED IN : ", isUserLoggedIn)
+      // console.log("WATCHNOW CLICKED ?  : ", watchNowCLicked)
+    } else {
+      setIsUserLoggedIn(true)
+      setWatchNowCLicked(!watchNowCLicked);
+      console.log("IS USER LOGGED IN : ", isUserLoggedIn)
+      console.log("WATCHNOW CLICKED ?  : ", watchNowCLicked)
+    }
   }
   const handleReadmore = () => {
     setReadmore(!readmore)
   }
 
-  const handleFavourite = async (e) => {
-    e.preventDefault()
-    setFavourite(!favourite)
+
+  const handleFavourite = async (movieName) => {
 
     try {
 
-      const response = await axios.post(`http://localhost:8000/api/v1/user/post-to-wishlist/${id}`,
+      const response = await axios.post(`http://localhost:8000/api/v1/user/add-or-remove-from-wishlist/${id}`,
         {},
         {
           headers: { 'Content-Type': "application/json" },
           withCredentials: true
         })
 
-      console.log("Successfully added video to wishlit : ", response)
+
+
+      if (response.status === 201) {
+        dispatch(setAuthUser(response.data.updatedUser))
+        toast.success(` ${movieName} Added to wishlist`, {
+          icon: FaBookmark,
+          position: "top-center",
+          autoClose: 1000,
+          pauseOnHover: true,
+          hideProgressBar: false,
+          theme: "dark",
+          progress: undefined,
+        })
+
+        if (response.data.updatedUser?.wishlist?.toString().includes(id)) {
+          setFavorites(true)
+        }
+
+      }
+
+
+      if (response.status === 200) {
+        dispatch(setAuthUser(response.data.updatedUser))
+        toast.warn(`${movieName} Removed from wishlist`, {
+          icon: MdDeleteOutline,
+          position: "top-center",
+          autoClose: 1000,
+          pauseOnHover: true,
+          hideProgressBar: false,
+          theme: "dark",
+          progress: undefined
+        })
+
+        if (authUser?.wishlist?.toString().includes(id)) {
+          setFavorites(false)
+        }
+      }
+
     } catch (error) {
       console.log("Frontend : got error while add to wishlist : ", error)
     }
@@ -108,6 +166,7 @@ const MoviesDetails = () => {
   const setGenreNameFun = (name) => {
     dispatch(setGenreName(name));
   }
+
 
   return (
     <Box w={'100%'} minH={'90vh'} bgColor={'black'} color={'#fff'} padding={'2rem 3rem'}>
@@ -118,13 +177,13 @@ const MoviesDetails = () => {
               <Image border={'1px solid #131313'} w={'16rem'} height={'25rem'} src={`https://image.tmdb.org/t/p/w500${item.poster_path}`} />
               <Stack gap={'1rem'}>
                 <Heading color={'orange'} textTransform={'uppercase'} >{item.title}</Heading>
-                <Text>Released on :  {item.releasedFormatted}</Text>
+                <Text>Released on : <span style={{color : "gray"}}> {item.releasedFormatted}</span></Text>
                 <Flex gap={'1rem'}>
                   <Text>Genre:
                   </Text>
                   {
                     item.genres.map((genre, index) => (
-                      <Link to={`/genre/${genre.id}`} onClick={()=> setGenreNameFun(genre.name)} style={{textDecoration : "none"}}>
+                      <Link to={`/genre/${genre.id}`} onClick={() => setGenreNameFun(genre.name)} style={{ textDecoration: "none" }}>
                         <Text color={'gray'} border={'1px solid #717171'} padding={'.1rem .7rem'} borderRadius={'.5rem'} cursor={'pointer'}>{genre.name}</Text>
                       </Link>
                     ))
@@ -138,8 +197,23 @@ const MoviesDetails = () => {
                     </Stack>
                   )
                 }
-                <Button border={'none'} w={'11rem'} fontWeight={'bold'} onClick={handleMovie} color={'white'} padding={'.5rem 1rem'} borderRadius={'.8rem'} backgroundColor={'red'} cursor={'pointer'} leftIcon={<FaPlay />}>Watch Full movie</Button>
-                <Button w={'fit-content'} fontSize={'1rem'} border={'none'} fontWeight={'bold'} onClick={handleFavourite} color={'black'} padding={'.5rem 1rem'} borderRadius={'.8rem'} backgroundColor={'white'} cursor={'pointer'} rightIcon={<MdFavoriteBorder />}>Add to favourite</Button>
+                <Button border={'none'} w={'fit-content'} fontSize={'1rem'}
+                  fontWeight={'bold'} onClick={handleMovie}
+                  color={'white'} padding={'.5rem 1rem'}
+                  borderRadius={'.8rem'} backgroundColor={'#333888'}
+                  cursor={'pointer'} leftIcon={<IoMdPlay />}>
+                  Watch Full movie
+                </Button>
+
+
+                <Button w={'fit-content'} fontSize={'1rem'}
+                  border={'none'} fontWeight={'bold'}
+                  onClick={() => handleFavourite(item.title)}
+                  color={'white'} padding={'.5rem 1rem'}
+                  borderRadius={'.8rem'} backgroundColor={'teal'}
+                  cursor={'pointer'} leftIcon={Favorites || alreadyInFav ? <MdFavorite /> : <MdFavoriteBorder />}>
+                  {Favorites || alreadyInFav ? "Remove from favorites " : "Add to favorites"}
+                </Button>
 
 
               </Stack>
@@ -160,12 +234,15 @@ const MoviesDetails = () => {
           }
 
           {/* STREAMING MOVIE CODE... */}
-          <Box h={'100vh'} background={'rgba(0,0,0,0.8)'} zIndex={'99'} w={'100vw'} display={watchNowCLicked ? "flex" : 'none'} justifyContent={'center'} alignItems={'center'} position={'fixed'} left={'0'} top={'0'}>
+          <Box h={'100vh'} background={'rgba(0,0,0,0.8)'} zIndex={'99'} w={'100vw'} display={watchNowCLicked  ? "flex" : 'none'} justifyContent={'center'} alignItems={'center'} position={'fixed'} left={'0'} top={'0'}>
             <Box width={'85%'} height={'90%'} display={'flex'} >
-              <iframe allowFullScreen style={{ border: "none" }} src={`https://vidsrc.xyz/embed/movie/${id}`} width={'100%'} height={'100%'}></iframe>
+              {/* <iframe allowFullScreen  onLoad={() => console.log("Iframe loaded successfully!")} style={{ border: "none" }} src={`https://vidsrc.xyz/embed/movie/${id}`} width={'100%'} height={'100%'}></iframe> */}
               <IoCloseSharp fontSize={'2rem'} cursor={'pointer'} onClick={handleMovie} />
             </Box>
           </Box>
+
+
+       
 
 
           <Heading mt={'2rem'}>TOP CAST</Heading>
@@ -203,7 +280,7 @@ const MoviesDetails = () => {
               {
                 recommendations.map((item, idx) => (
                   <Box w={'fit-content'}>
-                    <Link to={`/movie/${item.id}`} style={{ textDecoration: "none", width: "fit-content" }} target='_blank' key={idx}>
+                    <Link to={`/movie/${item.id}`} style={{ textDecoration: "none", width: "fit-content" }} key={idx}>
                       <Box _hover={{ border: "3px solid orange" }} cursor={'pointer'} position={'relative'} boxShadow={' inset 0px -55px 25px 0px #121212'} width={'10.5rem'} height={'16rem'} bgPosition={'center'} bgSize={'contain'} bgRepeat={'no-repeat'} bgImage={`https://image.tmdb.org/t/p/w500${item.poster_path}`} gap={'1rem'} display={'flex'} flexDir={'column'}>
                         <Text noOfLines={'2'} position={'absolute'} color={'white'} textAlign={'center'} bottom={'3'} fontWeight={'bold'} padding={'0 .4rem'}>{item.title}</Text>
                       </Box>

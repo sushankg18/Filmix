@@ -14,6 +14,8 @@ import WebSeasons from './screens/WebSeasons.jsx';
 import ScrollToTop from 'react-scroll-to-top'
 import Userprofile from './screens/Userprofile.jsx';
 import { useSelector } from 'react-redux';
+import About from './components/About.jsx';
+import Contact from './components/Contact.jsx';
 
 function App() {
 
@@ -27,6 +29,8 @@ function App() {
         <Route path={`/user/${authUser?.fullname}`} element={<Userprofile />} />
         <Route path='/login' element={<Login />} />
         <Route path='/signup' element={<Signup />} />
+        <Route path='/about' element={<About />} />
+        <Route path='/contact-us' element={<Contact />} />
         <Route path='/series' element={<Webseries />} />
         <Route path='/movie/:id' element={<MoviesDetails />} />
         <Route path='/genre/:id' element={<GenreMovies />} />

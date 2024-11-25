@@ -18,7 +18,6 @@ const WebSeasons = () => {
         const fetchData = async () => {
             try {
                 const response = await axios.get(`${BaseUrl}/tv/${id}/season/${sn}?api_key=${ApiKey}`)
-                console.log("WEBSERIES RESPONSE : ", response)
                 setSeason([response.data])
             } catch (error) {
                 console.log("Error : ", error)
