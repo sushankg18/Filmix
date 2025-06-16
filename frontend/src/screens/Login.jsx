@@ -1,4 +1,4 @@
-import { Button, Center, Flex, Input, InputGroup, Text, VStack } from '@chakra-ui/react'
+import { Button, Center, Flex, Heading, Input, InputGroup, Text, VStack } from '@chakra-ui/react'
 import axios from 'axios'
 import React, { useState } from 'react'
 import { BiHide, BiShow } from 'react-icons/bi'
@@ -36,15 +36,13 @@ const Login = () => {
             if (user) {
                 dispatch(setAuthUser(user.data.logInUser));
 
-                toast.success('User logged in successfully!', {
-                    position: "bottom-center",
-                    autoClose: 5000,
+                toast.success(`${user.data.message}`, {
+                    position: "top-center",
+                    autoClose: 2000,
+                    pauseOnHover: false,
                     hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "light",
+                    theme: "dark",
+                    progress: undefined
                 }
                 );
 
@@ -53,27 +51,58 @@ const Login = () => {
                 }, 2000);
             }
         } catch (error) {
-            toast('Invalid email or password!');
+            if (error.status === 401) {
+                toast.error(`${error.response.data.message}`, {
+                    position: "top-center",
+                    autoClose: 2000,
+                    pauseOnHover: false,
+                    hideProgressBar: false,
+                    theme: "dark",
+                    progress: undefined
+                });
+            }
+            if (error.status === 400) {
+                toast.error(`${error.response.data.message}`, {
+                    position: "top-center",
+                    autoClose: 2000,
+                    pauseOnHover: false,
+                    hideProgressBar: false,
+                    theme: "dark",
+                    progress: undefined
+                });
+            }
+            if (error.status === 403) {
+                toast.error(`${error.response.data.message}`, {
+                    position: "top-center",
+                    autoClose: 2000,
+                    pauseOnHover: false,
+                    hideProgressBar: false,
+                    theme: "dark",
+                    progress: undefined
+                });
+            }
+            console.log("LOGIN ERROR CONSOLE : ", error)
         }
     };
 
 
 
     return (
-        <Center w={'100%'} minH={'90vh'} bgColor={'black'}>
-            <VStack w={'30%'} gap={'1.3rem'} bgColor={'#111111'} minH={'fit-content'} borderRadius={'1rem'} p={'3rem 3rem'} fontSize={'1.2rem'}>
-                <Text fontWeight={'bold'} color={'white'} cursor={'default'} textDecoration={'none'} fontSize={'xx-large'}>
-                    Login
-                </Text>
+        <Center w={'100%'} minH={['78vh']} color={'white'} flexDir={'column'} bgGradient="linear(to-b, #101624  ,#04060A)">
+            <VStack w={['100%', '30%']} gap={'1.3rem'} minH={'fit-content'} borderRadius={'1rem'} p={'1rem 2rem'} fontSize={'1.2rem'}>
+                <VStack alignItems={'flex-start'} gap={'0'} w={'100%'}>
+                    <Text alignSelf={'flex-start'} fontWeight={'bold'} userSelect={'none'} color={'white'} cursor={'default'} textDecoration={'none'} fontSize={'xx-large'}>
+                        Login
+                    </Text>
+                    <Text fontSize={'.9rem'} color={'gray'}>Sign in to your account</Text>
+                </VStack>
                 <InputGroup gap={'.7rem'} display={'flex'} flexDir={'column'}>
-                    <Text>Email</Text>
-                    <Input value={email} onChange={(e) => setEmail(e.target.value)} bg={'none'} color={'white'} border={'1px solid #565656'} outline={'none'} p={'.4rem 1rem'} fontWeight={'bold'} fontSize={'1.1rem'} />
+                    <Input value={email} onChange={(e) => setEmail(e.target.value)} borderColor={'#313131'} outline={'1px solid #313131'} w={'100%'} border={'1px solid #313131'} fontSize={'1.1rem'} p={'.7rem 1rem'} color={'white'} bgColor={'transparent'} placeholder='Email' />
                 </InputGroup>
 
                 <InputGroup gap={'.7rem'} display={'flex'} flexDir={'column'}>
-                    <Text>Password</Text>
-                    <Flex border={'1px solid #565656'} alignItems={'center'}>
-                        <Input value={password} onChange={(e) => setPassword(e.target.value)} w={'95%'} type={showPass ? "text" : 'password'} bg={'none'} color={'white'} border={'none'} outline={'none'} p={'.4rem 1rem'} fontWeight={'bold'} fontSize={'1.1rem'} />
+                    <Flex border={'1px solid #313131'} alignItems={'center'}>
+                        <Input value={password} onChange={(e) => setPassword(e.target.value)} w={'100%'} type={showPass ? "text" : 'password'} border={'none'} outline={'none'} fontSize={'1.1rem'} p={'.7rem 1rem'} color={'white'} bgColor={'transparent'} placeholder='Password' />
                         {
                             showPass ?
                                 <BiHide onClick={handleShowPassword} style={{ width: "15%" }} fontSize={'1.3rem'} />
@@ -83,12 +112,12 @@ const Login = () => {
                     </Flex>
                 </InputGroup>
 
-                <Button onClick={loginUser} border={'none'} cursor={'pointer'} mt={'1rem'} w={'100%'} p={'.3rem 0'} bgColor={'red'} color={'white'} fontWeight={'bold'} fontSize={'1.2rem'}>Login</Button>
+                <Button onClick={loginUser} border={'none'} variant={'solid'} colorScheme='purple' cursor={'pointer'} mt={'1rem'} w={'100%'} p={'.3rem 0'} fontWeight={'bold'} fontSize={'1.2rem'}>Login</Button>
 
-                <Flex alignSelf={'flex-start'} gap={'.4rem'}>
+                <Flex fontSize={'.9rem'} color={'white'} alignSelf={'flex-start'} gap={'.4rem'}>
                     <Text>Don't have an account ? </Text>
                     <Link style={{ textDecoration: "none" }} to={'/signup'}>
-                        <Text color={'red'}>Signup</Text>
+                        <Text color={'purple.200'} >Signup</Text>
                     </Link>
                 </Flex>
             </VStack>

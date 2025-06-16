@@ -2,14 +2,15 @@ import React, { useState, useEffect, } from 'react'
 import { Box, Button, Flex, Heading, Image, Stack, Text, } from '@chakra-ui/react'
 import { Link, useParams } from 'react-router-dom'
 import { BsInstagram } from "react-icons/bs";
-import { FaTwitter } from "react-icons/fa";
 import { FaFacebook } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
-
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
+import noImageAvailable from '../Assets/noimageavailable.png'
 import axios from 'axios'
 import Loader from '../components/Loader'
+
 const PersonDetails = () => {
+
     const { id } = useParams();
     const [personDetails, setPersonDetail] = useState([])
     const [personMovies, setPersonMovies] = useState([])
@@ -20,7 +21,7 @@ const PersonDetails = () => {
     const ApiKey = 'a8d7d1e8391d7a5863bd8bdd945d63b4'
 
     const formatDate = (rawDate) => {
-        if (!rawDate) return null; 
+        if (!rawDate) return null;
         const options = { month: "short", day: "numeric", year: "numeric" };
         return new Date(rawDate).toLocaleDateString("en-US", options);
     };
@@ -31,6 +32,7 @@ const PersonDetails = () => {
         const minutes = rawDuration % 60
         return `${hours}h ${minutes}m`
     }
+
     useEffect(() => {
         let fetchData = async () => {
             try {
@@ -60,112 +62,108 @@ const PersonDetails = () => {
     }
 
     return (
-        <Box w={'100%'} minH={'90vh'} bgColor={'black'} color={'#fff'} padding={'2rem 3rem'}>
+        <Box w={['100vw', '100%']} overflow={'hidden'} minH={'90vh'} bgColor={'transparent'} color={'#fff'} padding={['1.5rem', '2rem 3rem']}>
             {loading ? <Loader /> : personDetails.map((item, idx) => (
                 <>
-                    <Box gap={'1rem'} w={'100%'} mb={'2rem'} minH={'fit-content'} display={'flex'}  >
-                        <Box h={'fit-content'}>
-                            <Image border={'1px solid #131313'} w={'13rem'} borderRadius={'.7rem'} height={'20rem'} src={`https://image.tmdb.org/t/p/w500${item.profile_path}`} />
+                <Box gap={'1rem'} w={'100%'} mb={'2rem'} minH={'fit-content'} flexDir={['column', 'row']} display={'flex'}  >
+                    <Box h={'fit-content'} alignSelf={['center', 'start']}>
+                        <Image border={'1px solid #131313'} w={['10rem', '15rem']} borderRadius={'.7rem'} src={`https://image.tmdb.org/t/p/w500${item.profile_path}`} />
+                    </Box>
+                    <Box w={['100%', '70%']} display={'flex'} gap={'2rem'}>
+                        <Stack gap={'1rem'}>
+                            <Heading alignSelf={['center', 'start']} size={'lg'} color={'orange'} textTransform={'uppercase'} >{item.name}</Heading>
+                            <Text>Born : <span style={{ color: "gray" }}> {item.birthDate ? item.birthDate : "Not available"}</span></Text>
+                            {
+                                (item.deathday !== null) &&
+                                <Text>Died : <span style={{ color: "gray" }}> {item.deathday ? item.deathday : "Not available"}</span></Text>
+                            }
+                            <Text>Place of Birth : <span style={{ color: "gray" }}> {item.place_of_birth ? item.place_of_birth : "Not available"}</span></Text>
+                            <Text color={'gray'}> <span style={{ color: "white" }}>Gender : </span>  {item.gender === 1 ? "Female" : "Male"}</Text>
+                            {
+                                personSocialMedias.map((sm, index) => (
+                                    <Flex gap={'1.7rem'} alignItems={'center'}>
+                                        <Text>Social media's : {(sm.instagram_id && sm.facebook_id && sm.twitter_id) === null && <span style={{ color: "gray" }}> NOT AVAILABLE</span>}</Text>
 
-                        </Box>
-                        <Box display={'flex'} gap={'2rem'}>
-                            <Stack gap={'1rem'}>
-                                <Heading fontSize={'2rem'} color={'orange'} textTransform={'uppercase'} >{item.name}</Heading>
-                                <Text>Born : <span style={{ color: "gray" }}> {item.birthDate}</span></Text>
-                                {
-                                    (item.deathday !== null) &&
-                                    <Text>Died : <span style={{ color: "gray" }}> {item.deathday}</span></Text>
-                                }
-                                <Text>Place of Birth : <span style={{ color: "gray" }}> {item.place_of_birth}</span></Text>
-                                <Text>Gender : {item.gender === 1 ? "Female" : "Male"}</Text>
-                                {
-                                    personSocialMedias.map((sm, index) => (
-                                        <Flex gap={'2rem'}>
-                                            <Text>Social media's : </Text>
-
+                                        {sm.facebook_id &&
                                             <Link to={`https:/facebook.com/${sm.facebook_id}`} style={{ textDecoration: "none" }} target='_blank'>
                                                 <Flex color={'white'} alignItems={'center'} gap={'.5rem'} fontSize={'1.1rem'}>
-                                                    {/* <Text>Facebook</Text> */}
                                                     <FaFacebook />
                                                 </Flex>
-                                            </Link>
+                                            </Link>}
+                                        {
+                                            sm.instagram_id &&
                                             <Link to={`https:/instagram.com/${sm.instagram_id}`} style={{ textDecoration: "none" }} target='_blank'>
                                                 <Flex color={'white'} alignItems={'center'} gap={'.5rem'} fontSize={'1.1rem'}>
-                                                    {/* <Text>Instagram</Text> */}
                                                     <BsInstagram />
                                                 </Flex>
                                             </Link>
+                                        }
+                                        {
+                                            sm.twitter_id &&
                                             <Link to={`https:/x.com/${sm.twitter_id}`} style={{ textDecoration: "none" }} target='_blank'>
                                                 <Flex color={'white'} alignItems={'center'} gap={'.5rem'} fontSize={'1.1rem'}>
-                                                    {/* <Text>X</Text> */}
                                                     <FaXTwitter />
-
                                                 </Flex>
                                             </Link>
+                                        }
 
-                                        </Flex>
-                                    )
-                                    )
-                                }
-                                <Text>Known for : <span style={{ color: "gray", marginLeft: ".6rem" }}>{item.known_for_department}</span></Text>
-                                <Stack>
-                                    <Text noOfLines={readMore ? "auto" : '5'} style={{ whiteSpace: 'pre-line' }}>
-                                        Biography : <span style={{ color: "gray", marginLeft: ".6rem" }}>{item.biography}</span>
-                                    </Text>
-
-                                    <Button
-                                        display={item.biography.split('\n').length > 5 || item.biography.split(' ').length > 130 ? "flex" : "none"}
-                                        color={'white'}
-                                        bg={'none'}
-                                        cursor={'pointer'}
-                                        border={'none'}
-                                        onClick={handleReadmore}
-                                        width={'fit-content'}
-                                        padding={'.1rem 0'}
-                                        alignItems={'center'}
-                                        gap={'.5rem'}
-                                    >
-                                        {readMore ? "Read less" : "Read more"}
-                                        {readMore ? <IoIosArrowUp /> : <IoIosArrowDown />}
-                                    </Button>
-                                </Stack>
-
-                                <Heading mt={'2rem'}>Known for</Heading>
-                                {
-                                    personMovies.map((movies, indexxx) => (
-                                        <Link to={`/movie/${movies.id}`} style={{ textDecoration: "none" }}>
-                                            <Flex border={'1px solid #383838'} cursor={'pointer'} borderRadius={'1rem'} p={'.5rem'} gap={'1rem'}>
-                                                <Image border={'1px solid #131313'} borderRadius={'1rem'} w={'7rem'} height={'10rem'} src={`https://image.tmdb.org/t/p/w500${movies.poster_path}`} />
-                                                <Flex flexDir={'column'} gap={'.4rem'}>
-                                                    <Text fontWeight={'bold'} fontSize={'1.3rem'} color={'white'} >{movies.title}</Text>
-                                                    <Text color={'gray'}>{movies.overview}</Text>
-                                                </Flex>
-                                            </Flex>
-                                        </Link>
-                                    ))
-                                }
-
-                            </Stack>
-                        </Box>
-
-                    </Box>
-
-                    {/* <Box overflowX={'scroll'} my={'2rem'} sx={scrollbarStylesHorizontal}>
-
-                        <Flex gap={'1rem'} py={'1rem'}>
-                            {
-                                personMovies.map((cast, index) => (
-                                    <>
-
-                                    </>
+                                    </Flex>
                                 )
                                 )
                             }
-                        </Flex>
-                    </Box> */}
+                            {
+                                item.known_for_department.length >0 && (
+
+                                    <Text>Known for : <span style={{ color: "gray", marginLeft: ".6rem" }}>{item.known_for_department}</span></Text>
+                                )
+                            }
+                            <Stack>
+                                {item.biography &&
+                                    <Text noOfLines={readMore ? "auto" : '5'} >
+                                        Biography : <span style={{ color: "gray", marginLeft: ".6rem" }}>{item.biography}</span>
+                                    </Text>
+                                }
+
+                                <Button
+                                    display={item.biography.split('\n').length > 5 || item.biography.split(' ').length > 130 ? "flex" : "none"}
+
+                                    variant={'plain'}
+                                    cursor={'pointer'}
+                                    border={'none'}
+                                    onClick={handleReadmore}
+                                    width={'fit-content'}
+                                    padding={'.1rem 0'}
+                                    alignItems={'center'}
+                                    gap={'.5rem'}
+                                >
+                                    {readMore ? "Read less" : "Read more"}
+                                    {readMore ? <IoIosArrowUp /> : <IoIosArrowDown />}
+                                </Button>
+                            </Stack>
+
+                            <Heading mt={'2rem'} size={'lg'}>Known for</Heading>
+                            {
+                                personMovies.map((movies, indexxx) => (
+                                    <Link to={`/movie/${movies.id}`} style={{ textDecoration: "none" }}>
+                                        <Flex border={'1px solid #383838'} cursor={'pointer'} borderRadius={'1rem'} p={'.5rem'} gap={'1rem'}>
+                                            <Image border={'1px solid #131313'} borderRadius={'1rem'} w={'5rem'} height={'7rem'} src={movies.poster_path ? `https://image.tmdb.org/t/p/w500${movies.poster_path}` : noImageAvailable} />
+                                            <Flex flexDir={'column'} gap={'.4rem'}>
+                                                <Text fontWeight={'bold'} fontSize={'1.1rem'} color={'white'} >{movies.title}</Text>
+                                                <Text color={'gray'} noOfLines={'3'}>{movies.overview}</Text>
+                                            </Flex>
+                                        </Flex>
+                                    </Link>
+                                ))
+                            }
+
+                        </Stack>
+                    </Box>
+
+                </Box>
 
                 </>
-            ))}
+    ))
+}
 
         </Box >
 

@@ -11,16 +11,27 @@ const UserSchema = new mongoose.Schema(
             required: true,
             unique: true
         },
+        isEmailVerified : {
+            type : Boolean
+        },
+        verificationCode : {
+            type : String,
+            select : false
+        },
+        verificationCodeExpiry : {
+            type : Date,
+            select : false
+        },
         password: {
             type: String,
             required: true,
         },
-        wishlist : [{
+        watchlater : [{
             type : Number,
             default : [],
             unique : true
         }],
-        watchLater : [{
+        watchlater_series: [{
             type : Number,
             default : [],
             unique : true

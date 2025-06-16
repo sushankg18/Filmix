@@ -1,6 +1,10 @@
 import { User } from '../models/user.model.js'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import sendMail from '../helper/sendMail.js';
+import { welcomeEmail } from '../helper/welcomeEmail.js';
+import { otpVerify } from '../helper/otpVerify.js'
+
 
 export const registeruser = async (req, res) => {
 
@@ -9,12 +13,12 @@ export const registeruser = async (req, res) => {
         const requiredFields = [fullname, email, password,];
 
         if (requiredFields.some((field) => !field.trim())) {
-            return res.status(400).json({ message: "All fields are required!" })
+            return res.status(403).json({ message: "Please fill the all fields to create account" })
         };
 
         const existedUser = await User.findOne({ email })
         if (existedUser) {
-            return res.status(400).json({ message: "User with this email is already Existed!" })
+            return res.status(401).json({ message: "User with this email is already Existed!" })
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -26,8 +30,8 @@ export const registeruser = async (req, res) => {
         });
 
         if (user) {
+            sendMail(email, "Welcome to Filmix movie database", "", welcomeEmail(fullname))
             return res.status(200).json({ user, message: "User Created Successfully!" })
-            console.log("Account created successfully !!!!! ")
         }
 
     } catch (error) {
@@ -42,17 +46,17 @@ export const loginUser = async (req, res) => {
 
         const requiredFields = [email, password];
         if (requiredFields.some((fields) => !fields.trim())) {
-            return res.status(401).json({ message: "Please fill all fields!" })
+            return res.status(401).json({ message: "Please fill all the fields to login" })
         };
 
         const user = await User.findOne({ email })
         if (!user) {
-            return res.status(400).json({ message: "User not found" })
+            return res.status(400).json({ message: "User not found, Please check the email again." })
         };
 
         const isPassMatched = await bcrypt.compare(password, user.password)
         if (!isPassMatched) {
-            return res.status(401).json({ message: "Password is not matched" })
+            return res.status(403).json({ message: "Invalid Email or Password" })
         };
 
         const tokenData = {
@@ -64,7 +68,7 @@ export const loginUser = async (req, res) => {
         return res.status(200)
             .cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: "strict" })
             .json({
-                message: "User Logged in successfully !",
+                message: "User Logged in successfully ",
                 success: true,
                 logInUser
             })
@@ -73,6 +77,71 @@ export const loginUser = async (req, res) => {
         console.log("Error Logging user : ", error)
     }
 };
+
+// Export a function called verifyEmail which takes in a request and response object
+export const verifyEmail = async (req, res) => {
+
+    // Destructure the userEmail and username from the request parameters
+    const { userEmail, username } = req.params;
+    // Destructure the userTypedOtp from the request body
+    const { userTypedOtp } = req.body;
+
+    const user = await User.findOne({ email: userEmail }).select("isEmailVerified verificationCode verificationCodeExpiry");
+    let otp = '';
+
+    try {
+        if (userTypedOtp === '') {
+
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            const length = 6;
+            for (let i = 0; i < length; i++) {
+                const randomIndex = Math.floor(Math.random() * characters.length);
+                otp += characters[randomIndex];
+            }
+
+            const expiryTime = new Date(Date.now() + 5 * 60 * 1000);
+            user.verificationCode = otp;
+            user.verificationCodeExpiry = expiryTime;
+
+            await user.save();
+
+            console.log("OTP IS: ", otp);
+            sendMail(userEmail, "Email verification", "", otpVerify(username, otp));
+
+            return res.status(201).json({ message: "Verification code sent to your email." });
+        } else {
+
+            if (!user.verificationCode || !user.verificationCodeExpiry) {
+                return res.status(400).json({ message: "OTP not found, please request a new one." });
+            }
+
+            if (Date.now() > user.verificationCodeExpiry) {
+                user.verificationCode = null;
+                user.verificationCodeExpiry = null;
+                await user.save();
+                return res.status(400).json({ message: "Verification code expired. Please try again." });
+            }
+
+            if (userTypedOtp === user.verificationCode) {
+                user.isEmailVerified = true;
+                user.verificationCode = null;
+                user.verificationCodeExpiry = null;
+
+                await user.save();
+                const verifiedUser = await User.findOne({ email: userEmail }).select("-password");
+                return res.status(200).json({
+                    message: "Email verified successfully", user: verifiedUser
+                });
+            } else {
+                return res.status(400).json({ message: "Invalid OTP. Please try again." });
+            }
+        }
+    } catch (error) {
+        console.log("Backend error while OTP verification: ", error);
+        return res.status(500).json({ message: "Internal Server Error", error });
+    }
+}
+
 
 export const logoutUser = async (req, res) => {
     try {
@@ -83,6 +152,10 @@ export const logoutUser = async (req, res) => {
             });
     } catch (error) {
         console.log("Error while logout : ", error);
+        return res.status(405).json({
+            message: "PROBLEM WHILE LOGOUT",
+            error
+        })
     };
 };
 
@@ -136,7 +209,7 @@ export const updateUser = async (req, res) => {
     }
 }
 
-export const AddandRemoveFromWishlist = async (req, res) => {
+export const AddandRemoveFromwatchlater = async (req, res) => {
     try {
 
         const userId = req.id;
@@ -145,38 +218,78 @@ export const AddandRemoveFromWishlist = async (req, res) => {
 
         //checks if user logged In or not
         if (!userId) {
-            return res.status(402).json({ message: "Please login to remove anything from wishlist.!" })
+            return res.status(402).json({ message: "Please login to remove anything from watchlater.!" })
         }
 
         //checks if videoId exists or not
         if (!videoId) return res.status(402).json({ message: "Invalid video id " })
 
 
-        const user = await User.findById(userId).select("wishlist")
+        const user = await User.findById(userId).select("watchlater")
         //checks if user exist or not
         if (!user) return res.status(400).json({ message: "No user found..!" })
 
 
         //checking if the videoId stored in database or not
-        if (user.wishlist.includes(videoId)) {
-            user.wishlist = user.wishlist.filter(data => data.toString() !== videoId.toString());
+        if (user.watchlater.includes(videoId)) {
+            user.watchlater = user.watchlater.filter(data => data.toString() !== videoId.toString());
             await user.save()
 
             const updatedUser = await User.findById(userId).select("-password")
-            return res.status(200).json({ message: "Video removed from wishlist", updatedUser })
+            return res.status(200).json({ message: "Video removed from watchlater", updatedUser })
 
         } else {
-            user.wishlist.push(videoId)
+            user.watchlater.push(videoId)
             await user.save()
             const updatedUser = await User.findById(userId).select("-password")
-            return res.status(201).json({ message: "video added to wishlist.!", updatedUser })
+            return res.status(201).json({ message: "video added to watchlater.!", updatedUser })
         }
 
     } catch (error) {
-        console.log("Error while removing from wishlist", error)
-        return res.status(400).json({ message: "got error while removing video from wishlist " })
+        console.log("Error while removing from watchlater", error)
+        return res.status(400).json({ message: "got error while removing video from watchlater " })
     }
 
+}
+
+export const addSeriesToFavOrRev = async (req, res) => {
+    try {
+        const userId = req.id;
+
+        const { videoId } = req.params;
+
+        //checks if user logged In or not
+        if (!userId) {
+            return res.status(402).json({ message: "Please login to remove anything from watchlater.!" })
+        }
+
+        //checks if videoId exists or not
+        if (!videoId) return res.status(402).json({ message: "Invalid video id " })
+
+
+        const user = await User.findById(userId).select("watchlater_series")
+        //checks if user exist or not
+        if (!user) return res.status(400).json({ message: "No user found..!" })
+
+
+        //checking if the videoId stored in database or not
+        if (user.watchlater_series.includes(videoId)) {
+            user.watchlater_series = user.watchlater_series.filter(data => data.toString() !== videoId.toString());
+            await user.save()
+
+            const updatedUser = await User.findById(userId).select("-password")
+            return res.status(200).json({ message: "Video removed from watchlater", updatedUser })
+
+        } else {
+            user.watchlater_series.push(videoId)
+            await user.save()
+            const updatedUser = await User.findById(userId).select("-password")
+            return res.status(201).json({ message: "video added to watchlater.!", updatedUser })
+        }
+    } catch (error) {
+        console.log("Error while removing from watchlater", error)
+        return res.status(400).json({ message: "got error while removing video from watchlater " })
+    }
 }
 
 export const deleteUser = async (req, res) => {

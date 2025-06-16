@@ -3,7 +3,7 @@ import React from 'react'
 
 const Loader = () => {
     return (
-        <Center w={'80vw'} height={'50vh'} alignItems={'center'} justifyContent={'center'}>
+        <Center w={'100vw'} height={'60vh'} alignItems={'center'} justifyContent={'center'}>
             <Spinner
                 w={'10vh'}
                 height={'10vh'}

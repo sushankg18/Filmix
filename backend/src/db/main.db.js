@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
-import { User } from "../models/user.model.js"; // Ensure correct import
-
+import { User } from '../models/user.model.js'
 const DB_NAME = "filmix";
 const { MONGO_URI } = process.env;
 
@@ -11,16 +10,17 @@ const dbConnection = async () => {
             useUnifiedTopology: true,
         });
         console.log("Database connected..!");
-
-        // // Update existing users to include wishlist
-        // const result = await User.updateMany(
-        //     { watchLater: { $exists: false } },
-        //     { $set: { watchLater: [] } }
+        
+        // after updating code is written below (agar koi changes krne ho future me to commented code ko thik krke wapas commented kr dena hai)
+        // await User.updateMany(
+        //     { watchlater_series: { $exists: false } }, // jinke paas ye field nahi hai
+        //     { $set: { watchlater_series: [] } } // default empty array
         // );
-        // console.log(`Updated users: ${result.modifiedCount}`);
+
+
     } catch (error) {
         console.error("Database connection error:", error.message);
-        throw error; 
+        throw error;
     }
 };
 

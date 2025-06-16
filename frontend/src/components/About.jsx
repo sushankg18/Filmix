@@ -2,24 +2,24 @@ import { Box, Flex, Center, Heading, Image, Text } from '@chakra-ui/react'
 import React from 'react'
 import dpImage from '../Assets/footer.png'
 import { useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 
 const About = () => {
 
     const { authUser } = useSelector((store) => store.user)
 
     return (
-        <Center w={'100%'} flexDir={'column'} justifyContent={'start'} gap={'2rem'} minH={'90vh'} bgColor={'black'} color={'#fff'} padding={'2rem 3rem'}>
+        <Center w={'100%'} flexDir={'column'} justifyContent={'start'} gap={'2rem'} minH={'90vh'} color={'#fff'} padding={['1rem .5rem','2rem 3rem']}>
 
-            <Heading fontSize={'3rem'}>Hiii {authUser?.fullname.toUpperCase()},</Heading>
-            {/* <Image src={dpImage} /> */}
+            <Heading size={'xl'} >Hii <span style={ authUser ? {color : "gold"} : {color : "white"}}> {authUser? authUser.fullname.toUpperCase() : "Stranger" }</span>,</Heading>
 
-            <Heading fontSize={'1.7rem'}>Let's talk about Filmix</Heading>
-            <Text w={'70%'} color={'#9CA3AF'} fontSize={'1.2rem'}>
+            <Heading size={'md'}>Let's talk about Filmix</Heading>
+            <Text w={['100%','70%']} color={'#9CA3AF'} fontSize={['1rem','1.2rem']}>
                 Filmix is your ultimate hub for everything movies, TV shows, and web series.
                 Explore detailed information about your favorite content, including genres, cast, and crew,
                 all in one place.
                 <br></br>
-                But that’s not all—Filmix also lets 
+                But that’s not all—Filmix also lets
                 <strong style={{ color: "white" }}> you stream movies and web series online for free!
                 </strong>
                 Whether you’re looking to discover something new or revisit a classic,
@@ -32,7 +32,7 @@ const About = () => {
 
             <Flex flexDir={'column'} alignItems={'center'} gap={'2rem'} mt={'3rem'}>
                 <Heading fontSize={'1.7rem'}>Stats</Heading>
-                <Flex gap={'3rem'}>
+                <Flex gap={'3rem'} flexDir={'row'} flexWrap={'wrap'} justifyContent={'center'}>
                     <Flex flexDir={'column'}>
                         <Text fontSize={'1.3rem'}>995,711</Text>
                         <Text color={'#9CA3AF'}>Movies</Text>
@@ -64,11 +64,13 @@ const About = () => {
                 </Flex>
             </Flex>
 
-            <Heading border={'1px solid #414141'} transition={'.2s all ease-in-out'}
-             p={'.5rem 2rem'} cursor={'pointer'} mt={'3rem'}
-             borderRadius={'1rem'}
-            _hover={{color : "white", bgColor : "red"}}
-            >Contact us</Heading>
+            <Link to={'/contact-us'} style={{textDecoration : "none", color : "white"}}>
+                <Heading border={'1px solid #414141'} transition={'.2s all ease-in-out'}
+                    p={'.5rem 2rem'} size={'lg'} cursor={'pointer'} mt={'3rem'}
+                    borderRadius={'1rem'}
+                    _hover={{ color: "white", bgColor: "red" }}
+                >Contact us</Heading>
+            </Link>
         </Center>
     )
 }

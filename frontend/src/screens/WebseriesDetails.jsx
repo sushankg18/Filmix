@@ -6,14 +6,20 @@ import defaultImg from '../Assets/noimageavailable.png'
 import axios from 'axios'
 import Loader from '../components/Loader'
 import { CiHeart } from 'react-icons/ci';
-import { MdFavoriteBorder, MdOutlineWatchLater } from 'react-icons/md';
+import { MdDeleteOutline, MdFavorite, MdFavoriteBorder, MdOutlineWatchLater } from 'react-icons/md';
+import { setAuthUser } from '../redux/userSlice.js';
+import { useDispatch } from 'react-redux';
+import { toast, ToastContainer } from 'react-toastify';
 const WebseriesDetails = () => {
 
   const { id } = useParams();
+  const dispatch = useDispatch()
   const [movieDetail, setMovieDetail] = useState([])
   const [movieDirector, SetmovieDirector] = useState([])
   const [recommendation, setRecommendation] = useState([])
   const [trailer, setTrailer] = useState()
+  const [Favorites, setFavorites] = useState(false)
+  const [alreadyInFav, setAlreadyInFav] = useState(false)
   const [cast, setCast] = useState([])
   const [watchNowCLicked, setWatchNowCLicked] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -66,29 +72,82 @@ const WebseriesDetails = () => {
     setWatchNowCLicked(!watchNowCLicked);
   }
 
+  const handleFavourite = async (seriesName) => {
+    try {
+      const response = await axios.post(`http://localhost:8000/api/v1/user/add-or-remove-series-from-watchlater/${id}`,
+        {},
+        {
+          headers: { 'Content-Type': "application/json" },
+          withCredentials: true
+        })
 
+      if (response.status === 201) {
+        dispatch(setAuthUser(response.data.updatedUser))
+        toast.success(` ${seriesName} Added to watchlater`, {
+          position: "top-center",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+        })
+        if (response.data.updatedUser?.watchlater_series?.toString().includes(id)) {
+          setFavorites(true)
+        }
+      }
+
+      if (response.status === 200) {
+        dispatch(setAuthUser(response.data.updatedUser))
+        setFavorites(false)
+        setAlreadyInFav(false)
+        toast.warn(`${seriesName} Removed from watchlater`, {
+          icon: MdDeleteOutline,
+          position: "top-center",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+        })
+
+      }
+
+    } catch (error) {
+      console.log("Error while add to watchlater : ", error)
+    }
+
+  }
   return (
-    <Box w={'100%'} minH={'90vh'} bgColor={'black'} color={'#fff'} padding={'2rem 3rem'}>
+    <Box w={['100vw', '100%']} fontSize={['.9rem', '1rem']} overflow={'hidden'} minH={'90vh'} bgColor={'transparent'} color={'#fff'} padding={['1rem .7rem', '2rem 3rem']}>
       {loading ? <Loader /> : movieDetail.map((item, idx) => (
         <>
-          <Box w={'100%'} mb={'2rem'} minH={'fit-content'} display={'flex'} justifyContent={'space-between'} >
-            <Box display={'flex'} gap={'2rem'}>
-              <Image border={'1px solid #131313'} w={'16rem'} height={'25rem'} src={`https://image.tmdb.org/t/p/w500${item.poster_path}`} />
-              <Stack gap={'1rem'}>
-                <Heading color={'orange'} textTransform={'uppercase'} >{item.name}  </Heading>
+          <Box w={'100%'} mb={'2rem'} minH={'fit-content'} display={'flex'} flexDir={['column', 'row']} justifyContent={'space-between'}>
+            <Box h={'fit-content'} display={'flex'} flexDir={['column', "row"]} gap={'2rem'}>
+              <Image border={'1px solid #131313'} alignSelf={'center'} w={['10rem', '16rem']} height={['', '25rem']} src={`https://image.tmdb.org/t/p/w500${item.poster_path}`} />
+
+              <Stack gap={'1rem'} >
+
+                <Heading color={'orange'} alignSelf={['center', 'start']} size={'lg'} textTransform={'uppercase'} >{item.name}  </Heading>
+
                 <Text color={'orange'} style={{ fontSize: "1.3rem", marginLeft: ".4rem" }}> ({item.original_name}) </Text>
-                <HStack>
+                <HStack >
                   <Text>Released on : </Text>
                   <Text opacity={'.5'}>{item.releasedFormatted}</Text>
                 </HStack>
+
                 <Flex gap={'1rem'}>
                   <Text>Genre :</Text>
                   {
                     item.genres.map((genre, index) => (
-                      <Text opacity={'.5'}>{genre.name}</Text>
+                      <Text opacity={'.5'} key={index}>{genre.name}</Text>
                     ))
                   }
                 </Flex>
+
                 {
                   movieDirector && (
                     <HStack >
@@ -113,35 +172,75 @@ const WebseriesDetails = () => {
                       <Text opacity={'.5'}>{i.english_name}</Text>
                     ))}
                 </HStack>
-                <Button w={'17rem'} fontSize={'1rem'} border={'none'} fontWeight={'bold'} onClick={handleMovie} color={'white'} padding={'.5rem 1rem'} borderRadius={'.8rem'} backgroundColor={'#333888'}  cursor={'pointer'} rightIcon={<MdFavoriteBorder />}>Add to favourite</Button>
-                <Button w={'17rem'} fontSize={'1rem'} border={'none'} fontWeight={'bold'} onClick={handleMovie} color={'white'} padding={'.5rem 1rem'} borderRadius={'.8rem'} backgroundColor={'teal'} cursor={'pointer'} rightIcon={<MdOutlineWatchLater />}>Watch later</Button>
+
+                <Button w={['100%', '15rem']}
+                  border={'none'} fontWeight={'bold'}
+                  onClick={() => handleFavourite(item.name)}
+                  color={'white'} size={['sm', 'md']} alignSelf={['center', 'start']}
+                  borderRadius={'.8rem'} variant={'solid'} colorScheme='purple'
+                  cursor={'pointer'} leftIcon={Favorites || alreadyInFav ? <MdFavorite /> : <MdFavoriteBorder />}>
+                  {Favorites || alreadyInFav ? "Remove from favorites " : "Add to favorites"}
+                </Button>
+
               </Stack>
+
             </Box>
             {trailer && (
-              <Box>
-                <iframe title="Trailer" style={{ border: "none" }} width="600" height="400" src={`https://www.youtube.com/embed/${trailer.key}`} allowFullScreen></iframe>
-              </Box>
+              <Stack my={["1.5rem", '']}>
+                <Heading alignSelf={'center'} display={['flex', 'none']} size={'md'}>Trailer</Heading>
+                <Box fontSize={'.7rem'} w={['100%', '35rem']} h={['250', '350']}>
+                  <iframe title="Trailer" style={{ border: "none" }} width="100%" height="100%" src={`https://www.youtube.com/embed/${trailer.key}`} allowFullScreen></iframe>
+                </Box>
+              </Stack>
             )}
           </Box>
 
-          {/* <Text fontSize={'1.1rem'} mb={'.7rem'}><span style={{ fontWeight: "bold", marginRight: ".7rem" }}>Tagline : </span> {item.tagline}</Text> */}
 
           <Text fontSize={'1.1rem'} >  Overview : <span style={{ fontWeight: "bold", marginRight: ".7rem", opacity: ".5" }}>{item.overview}</span></Text>
 
 
 
 
+
+
+
+          <Box mt={'3rem'} display={'flex'} flexDir={'column'} gap={'1rem'}>
+            {
+              item.seasons.map((i, index) => (
+                <Flex h={'fit-content'} flexDir={'column'} border={'1px solid #404040'}>
+                  <Flex borderRadius={'1rem'} p={'.4rem .5rem'} overflow={'hidden'}>
+                    <Image border={'1px solid #131313'} w={'9rem'} height={'14rem'} src={`https://image.tmdb.org/t/p/w500${item.poster_path}`} />
+                    <VStack ap={'1rem'} alignItems={'flex-start'} pl={'1rem'}>
+                      <VStack alignItems={'flex-start'} gap={'.2rem'}>
+                        <Heading>{i.name}</Heading>
+                        <Text fontWeight={'bold'}>Total episodes : {i.episode_count}</Text>
+                      </VStack>
+                      <Text noOfLines={'5'} opacity={'.5'}>{i.overview ? i.overview : `Season ${index + 1} of ${item.name} premiered on ${item.releasedFormatted}`}</Text>
+                      <Link to={`/series/${id}/season/${i.season_number}`} style={{ textDecoration: "none" }}>
+                        <Text display={['none', "flex"]} cursor={'pointer'} bgColor={'red'} color={'white'} p={'.2rem 1rem'}>Watch season {i.season_number} all episodes</Text>
+                      </Link>
+                    </VStack>
+                  </Flex>
+                  <Link to={`/series/${id}/season/${i.season_number}`} style={{ textDecoration: "none" }}>
+                    <Text mx={'.5rem'} fontWeight={'bold'} borderRadius={'.5rem'} mb={'.5rem'} display={['flex', 'none']} cursor={'pointer'} bgColor={'red'} color={'white'} p={'.2rem 1rem'}>Watch season {i.season_number} all episodes</Text>
+                  </Link>
+                </Flex>
+              ))
+            }
+          </Box>
+
+          
           <Heading mt={'2rem'}>TOP CAST</Heading>
-          <Box overflowX={'scroll'} mt={'1rem'} mb={'2rem'} sx={scrollbarStylesHorizontal}>
-            <Flex gap={'1rem'} py={'1rem'}>
+          <Box overflowX={'scroll'} mt={'1rem'} py={'1rem'} mb={'2rem'} sx={scrollbarStylesHorizontal}>
+            <Flex gap={'1rem'} py={'0rem'}>
               {
                 cast.map((cast, index) => (
                   <Link to={`/person/${cast.id}`} style={{ textDecoration: "none" }}>
-                    <Flex flexDir={'column'} justifyContent={'space-between'} p={'.3rem'} h={'21rem'} borderRadius={'.6rem'} cursor={'pointer'} bgColor={'#121212'} w={'10rem'}>
+                    <Flex flexDir={'column'} gap={'.5rem'} justifyContent={'space-between'} p={'0rem'} h={'21.5rem'} border={'1px solid #404040'} borderRadius={'.6rem'} cursor={'pointer'} w={'10rem'}>
                       <Center h={'70%'}>
                         <Image width={cast.profile_path ? '100%' : "70%"} src={cast.profile_path ? `https://image.tmdb.org/t/p/w500${cast.profile_path}` : defaultImg} />
                       </Center>
-                      <Box h={'25%'} >
+                      <Box h={'30%'} >
                         <Text textAlign={'center'} mb={'.5rem'} fontSize={'1.1rem'} color={'white'} fontWeight={'bold'}>{cast.name}</Text>
                         <Text textAlign={'center'} fontSize={'.9rem'} color={'gray'} fontWeight={'200'}>{cast.character}</Text>
                       </Box>
@@ -150,37 +249,7 @@ const WebseriesDetails = () => {
                 )
                 )
               }
-
-              <Image src='' />
-              <Button w={'fit-content'} cursor={'pointer'} _hover={{ textDecor: "underline" }} fontSize={'1.1rem'} bgColor={'transparent'} border={'none'} color={'white'} padding={'0 2rem'} rightIcon={<FaArrowRight />}>Show All </Button>
             </Flex>
-          </Box>
-          {/* <Box h={'100vh'} background={'rgba(0,0,0,0.8)'} zIndex={'99'} w={'100vw'} display={watchNowCLicked ? "flex" : 'none'} justifyContent={'center'} alignItems={'center'} position={'fixed'} left={'0'} top={'0'}>
-            <Box width={'80%'} height={'80%'} display={'flex'} >
-              <iframe style={{ border: "none" }} src={`https://vidsrc.xyz/embed/movie/${id}`} width={'100%'} height={'100%'}></iframe>
-              <IoCloseSharp fontSize={'2rem'} cursor={'pointer'} onClick={handleMovie} />
-            </Box>
-          </Box> */}
-
-
-          <Box mt={'3rem'} display={'flex'} flexDir={'column'} gap={'1rem'}>
-            {
-              item.seasons.map((i, index) => (
-                <Flex border={'1px solid #404040'} borderRadius={'1rem'} p={'.4rem .5rem'} overflow={'hidden'}>
-                  <Image border={'1px solid #131313'} w={'9rem'} height={'14rem'} src={`https://image.tmdb.org/t/p/w500${item.poster_path}`} />
-                  <VStack gap={'1rem'} alignItems={'flex-start'} pl={'1rem'}>
-                    <VStack alignItems={'flex-start'} gap={'.2rem'}>
-                      <Heading>{i.name}</Heading>
-                      <Text fontWeight={'bold'}>Total episodes : {i.episode_count}</Text>
-                    </VStack>
-                    <Text opacity={'.5'}>{i.overview ? i.overview : `Season ${index + 1} of ${item.name} premiered on ${item.releasedFormatted}`}</Text>
-                    <Link to={`/series/${id}/season/${i.season_number}`} style={{ textDecoration: "none" }}>
-                      <Text cursor={'pointer'} bgColor={'red'} color={'white'} p={'.2rem 1rem'}>Watch season {index + 1} all episodes</Text>
-                    </Link>
-                  </VStack>
-                </Flex>
-              ))
-            }
           </Box>
 
 
@@ -196,17 +265,12 @@ const WebseriesDetails = () => {
                         <Text noOfLines={'2'} position={'absolute'} color={'white'} textAlign={'center'} bottom={'3'} fontWeight={'bold'} padding={'0 .4rem'}>{item.original_name}</Text>
                       </Box>
                     </Link>
-                    <Flex cursor={'pointer'} justifyContent={'space-evenly'} bgColor={'#171717'} mt={'.5rem'} p={'.3rem .2rem'} gap={'.3rem'} alignItems={'center'} w={'100%'}>
-                      <Text color={'white'}>Add to Wishlist</Text>
-                      <CiHeart color='red' fontSize={'1.2rem'} />
-                    </Flex>
-
                   </Box>
                 ))
               }
             </Flex>
           </Box>
-
+          <ToastContainer />
         </>
       ))}
 
